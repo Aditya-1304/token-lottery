@@ -24,7 +24,7 @@
     "@tanstack/react-query-next-experimental": "^5.51.11",
     "daisyui": "^4.12.10",
     "jotai": "^2.9.1",
-    "next": "14.2.5",
+    "next": "^14.2.23",
     "react": "^18",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1"
@@ -32,7 +32,8 @@
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/jest": "^29.0.3",
-    "@types/node": "^20",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.16",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
