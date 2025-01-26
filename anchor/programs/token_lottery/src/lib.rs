@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, metadata::Metadata, token_interface::{MintTo,mint_to,Mint, TokenAccount, TokenInterface}};
-use anchor_spl::metadata::{create_metadata_accounts_v3, CreateMetadataAccountsV3, mpl_token_metadata::types::{Creator, DataV2}};
+use anchor_spl::metadata::{create_metadata_accounts_v3, CreateMetadataAccountsV3, mpl_token_metadata::types::{Creator, DataV2}};use anchor_lang::{accounts::signer, system_program};
+use anchor_spl::metadata::{create_master_edition_v3, mpl_token_metadata::types::CollectionDetails, set_and_verify_sized_collection_item, sign_metadata, CreateMasterEditionV3, SetAndVerifySizedCollectionItem, SignMetadata};
 
 declare_id!("6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF");
 
@@ -15,8 +16,7 @@ pub const URI : &str = "https://raw.githubusercontent.com/solana-developers/deve
 pub mod token_lottery {
 
 
-    use anchor_lang::{accounts::signer, system_program};
-    use anchor_spl::metadata::{create_master_edition_v3, mpl_token_metadata::types::CollectionDetails, set_and_verify_sized_collection_item, sign_metadata, CreateMasterEditionV3, SetAndVerifySizedCollectionItem, SignMetadata};
+    use switchboard_on_demand::{randomness, RandomnessAccountData};
 
     use super::*;
 
@@ -236,8 +236,27 @@ pub mod token_lottery {
 
         Ok(())
     }
-}
 
+    pub fn commit_randomness(ctx: Context<CommitRandomness>) -> Result<()> {
+        let clock = Clock::get()?;
+        let token_lottery = &mut ctx.accounts.token_lottery;
+
+        if ctx.accounts.payer.key() != token_lottery.authority {
+            return Err(ErrorCode::NotAuthorized.into());
+        }
+
+        let randomness_data = RandomnessAccountData::parse(ctx.accounts.randomness_account.data.borrow()).unwrap();
+
+        if randomness_data.seed_slot != clock.slot - 1 {
+            return Err(ErrorCode::RandaomnessAlreadyRevealed.into());
+        }
+
+        token_lottery.randomness_account = ctx.accounts.randomness_account.key();
+        Ok(())
+    }
+
+
+}
 #[derive(Accounts)]
 pub struct Initialize<'info> {
 
@@ -405,6 +424,24 @@ pub struct BuyTicket<'info> {
 }
 
 
+#[derive(Accounts)]
+pub struct CommitRandomness<'info> {    
+
+    #[account(mut)]
+    pub payer: Signer<'info>,    
+
+    #[account(
+        mut,
+        seeds = [b"token_lottery".as_ref()],
+        bump = token_lottery.bump,
+    )]
+    pub token_lottery: Account<'info, TokenLottery>,
+
+    ///CHECK: This account is checked by the Switchboard smart contract
+    pub randomness_account: UncheckedAccount<'info>,
+
+}
+
 #[account]
 #[derive(InitSpace)]
 pub struct TokenLottery {
@@ -425,4 +462,10 @@ pub struct TokenLottery {
 pub enum ErrorCode {
     #[msg("Lottery is not open")]
     LotteryNotOpen,
+
+    #[msg("Not authorized")]
+    NotAuthorized,
+
+    #[msg("Randomness already revealed")]
+    RandaomnessAlreadyRevealed,
 }
