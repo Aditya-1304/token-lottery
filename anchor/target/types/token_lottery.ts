@@ -347,6 +347,11 @@ export type TokenLottery = {
       ],
       "accounts": [
         {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "tokenLottery",
           "writable": true,
           "pda": {
@@ -371,6 +376,9 @@ export type TokenLottery = {
               }
             ]
           }
+        },
+        {
+          "name": "randomnessAccount"
         }
       ],
       "args": []
@@ -624,6 +632,56 @@ export type TokenLottery = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "revealWinner",
+      "discriminator": [
+        234,
+        209,
+        237,
+        109,
+        16,
+        196,
+        64,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tokenLottery",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  108,
+                  111,
+                  116,
+                  116,
+                  101,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "randomnessAccount"
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -646,6 +704,36 @@ export type TokenLottery = {
       "code": 6000,
       "name": "lotteryNotOpen",
       "msg": "Lottery is not open"
+    },
+    {
+      "code": 6001,
+      "name": "notAuthorized",
+      "msg": "Not authorized"
+    },
+    {
+      "code": 6002,
+      "name": "randaomnessAlreadyRevealed",
+      "msg": "Randomness already revealed"
+    },
+    {
+      "code": 6003,
+      "name": "winnerAlreadyChosen",
+      "msg": "Winner already chosen"
+    },
+    {
+      "code": 6004,
+      "name": "incorrectRandomnessAccount",
+      "msg": "Incorrect randomness account"
+    },
+    {
+      "code": 6005,
+      "name": "lotteryNotCompleted",
+      "msg": "Lottery not completed"
+    },
+    {
+      "code": 6006,
+      "name": "randomnessNotResolved",
+      "msg": "Randomness not resolved"
     }
   ],
   "types": [
